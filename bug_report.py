@@ -7,7 +7,10 @@ from launchpadlib.launchpad import Launchpad
 
 # For what we need anonymous access should be sufficient
 cachedir = './cache'
-launchpad = Launchpad.login_anonymously('bug report', 'production', cachedir, version='devel')
+launchpad = Launchpad.login_anonymously('bug report',
+                                        'production',
+                                        cachedir,
+                                        version='devel')
 
 # set the project to openstack-ansible
 project = launchpad.projects('openstack/openstack-ansible')
@@ -15,9 +18,9 @@ project = launchpad.projects('openstack/openstack-ansible')
 # must have UTC time
 start_date = 'Aug-01-2017Z'
 end_date = 'Sep-01-2017Z'
-start_timestamp = timegm( time.strptime(
+start_timestamp = timegm(time.strptime(
     start_date.replace('Z', 'UTC'), '%b-%d-%Y%Z'))
-end_timestamp = timegm( time.strptime(
+end_timestamp = timegm(time.strptime(
     end_date.replace('Z', 'UTC'), '%b-%d-%Y%Z'))
 
 # get the bug list
@@ -29,8 +32,15 @@ bugs = project.searchTasks(status=["New", "Confirmed", "Triaged",
                                           created_before=datetime.utcfromtimestamp(end_timestamp).isoformat())
 
 # break up by importance
-counts = { 'unknown':0, 'undecided':0, 'critical':0, 'high':0,
-           'medium':0, 'low':0, 'wishlist':0 }
+counts = {'resolved': 0,
+          'unknown': 0,
+          'undecided': 0,
+          'critical': 0,
+          'high': 0,
+          'medium': 0,
+          'low': 0,
+          'wishlist': 0}
+
 bug_details = {}
 for bug in bugs:
     if bug.importance == 'Unknown':
@@ -47,6 +57,9 @@ for bug in bugs:
         counts['low'] += 1
     if bug.importance == 'Wishlist':
         counts['wishlist'] += 1
+    if bug.status == 'Fix Committed' or bug.status == 'Fix Released' \
+        or bug.status == "Won't Fix" or bug.status == 'Invalid':
+        counts['resolved'] += 1
     bug_details[bug.title] = bug.status
 
 # Report total
